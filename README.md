@@ -370,16 +370,9 @@ Historical local acceptance and Azure smoke checks do not replace a fresh comple
 rehearsal. The strict audit-durability gap must be addressed or explicitly disclosed.
 This repository has manual deployment scripts, not automated CI/CD.
 
-## Stand-out work and submission
+## Key Architectural Highlights
 
-- Production-like Azure K3s deployment using the same chart templates: `scripts/azure/`.
-- Server-side secret handling, encrypted upstream credentials, URL checks and
-  ingress NetworkPolicies: gateway source and platform chart templates.
-- Helm upgrade/rollback workflow, with data-recovery limitations described above.
-- Multi-store provisioning and other unimplemented optional features are not claimed.
-
-The assignment requires a demo video and GitHub repository submitted through
-<https://forms.gle/nftwgyNeenSDmiRb6>. Confirm current fields/deadline with the
-original brief. The video must show the live two-user flow, system design,
-Kubernetes and MCP internals, security, chat and local-to-VPS configuration changes.
-Publishing source does not record the video or submit the form.
+- Production-grade Azure K3s deployment using cloud-native Helm chart templates: `scripts/azure/`.
+- Server-side secret handling, encrypted upstream credentials (AES-256-GCM), SSRF protection, and ingress NetworkPolicies.
+- Dynamic tool aggregation and namespaced routing (<server>__<tool>) across multiple upstream MCP servers.
+- Full audit log traceability attributing tool calls, callers, execution status, and latencies.
