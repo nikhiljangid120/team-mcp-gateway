@@ -32,6 +32,6 @@ setup:
   existingSecret: ""
   # Only used for a fresh install. An existing site keeps its URL.
   url: ""
-  title: Urumi Store
+  title: team-mcp Store
   currency: INR
   woocommerceVersion: 11.2.1

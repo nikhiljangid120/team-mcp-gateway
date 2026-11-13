@@ -52,7 +52,7 @@ export class McpController implements OnModuleDestroy {
 
   private serverFor(user: AuthUser): Server {
     const server = new Server(
-      { name: 'urumi-gateway', version: '0.1.0' },
+      { name: 'team-gateway', version: '0.1.0' },
       { capabilities: { tools: {} }, instructions: 'Tools are named <server>__<tool>. Every call runs as your user and is audited.' },
     );
     server.setRequestHandler('tools/list', async () => ({

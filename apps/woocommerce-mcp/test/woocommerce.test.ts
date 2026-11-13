@@ -167,7 +167,7 @@ test('in-cluster settings: extra allowed host and forwarded proto header', async
   });
   const storeUrl = await listen(store);
   t.after(() => stop(store));
-  const serviceHost = 'woo-mcp.urumi-platform.svc.cluster.local';
+  const serviceHost = 'woo-mcp.mcp-platform.svc.cluster.local';
   const adapter = await createWooCommerceServer(new WooCommerceClient({
     url: storeUrl, consumerKey: 'ck_test', consumerSecret: 'cs_test', allowHttp: true, forwardedProto: 'https',
   }), token, [serviceHost]);

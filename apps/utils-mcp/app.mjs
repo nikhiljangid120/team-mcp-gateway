@@ -13,7 +13,7 @@ const text = value => ({ content: [{ type: 'text', text: JSON.stringify(value) }
 const failure = message => ({ isError: true, content: [{ type: 'text', text: message }] });
 
 function buildServer() {
-  const server = new McpServer({ name: 'urumi-utils', version: '0.1.0' });
+  const server = new McpServer({ name: 'team-utils', version: '0.1.0' });
   server.registerTool('convert_currency', {
     description: 'Convert an amount between INR, USD, EUR and GBP using fixed demo rates (not live data).',
     inputSchema: z.strictObject({ amount: z.number().nonnegative(), from: currency, to: currency }),

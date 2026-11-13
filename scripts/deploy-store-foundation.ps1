@@ -18,19 +18,19 @@ function New-LocalPassword {
 
 & $helm lint $chart -f $values
 if ($LASTEXITCODE -ne 0) { throw 'Helm lint failed.' }
-$namespace = & kubectl --kubeconfig $kubeconfig --request-timeout=5s get namespace urumi -o name --ignore-not-found
+$namespace = & kubectl --kubeconfig $kubeconfig --request-timeout=5s get namespace team-mcp -o name --ignore-not-found
 if ($LASTEXITCODE -ne 0) {
     throw 'Cannot connect to local Kubernetes. Open Docker Desktop and wait for Engine running, then run .\scripts\create-local-cluster.ps1 before retrying. Do not delete the cluster or its volumes.'
 }
 if (-not $namespace) {
-    & kubectl --kubeconfig $kubeconfig create namespace urumi
+    & kubectl --kubeconfig $kubeconfig create namespace team-mcp
     if ($LASTEXITCODE -ne 0) { throw 'Namespace creation failed.' }
 }
 
 # The setup Job needs the store admin and the adapter's API key.
 & (Join-Path $PSScriptRoot 'create-local-secrets.ps1')
 
-$existing = & kubectl --kubeconfig $kubeconfig -n urumi get secret store-database -o name --ignore-not-found
+$existing = & kubectl --kubeconfig $kubeconfig -n team-mcp get secret store-database -o name --ignore-not-found
 if ($LASTEXITCODE -ne 0) { throw 'Cannot inspect the database Secret.' }
 if (-not $existing) {
     # Generate once and reuse. Changing a Secret does not rotate an initialized
@@ -39,18 +39,18 @@ if (-not $existing) {
         $contents = "mysql-password=$(New-LocalPassword)`nmysql-root-password=$(New-LocalPassword)`n"
         [System.IO.File]::WriteAllText($secretFile, $contents, [System.Text.UTF8Encoding]::new($false))
     }
-    & kubectl --kubeconfig $kubeconfig -n urumi create secret generic store-database --from-env-file=$secretFile
+    & kubectl --kubeconfig $kubeconfig -n team-mcp create secret generic store-database --from-env-file=$secretFile
     if ($LASTEXITCODE -ne 0) { throw 'Secret creation failed.' }
 } else {
     Write-Host 'Reusing the existing database Secret; credentials were not rotated.'
 }
 
 # Validate against the running API before changing application resources.
-& $helm upgrade --install store $chart --kubeconfig $kubeconfig -n urumi -f $values --dry-run=server | Out-Null
+& $helm upgrade --install store $chart --kubeconfig $kubeconfig -n team-mcp -f $values --dry-run=server | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Kubernetes rejected the rendered chart.' }
 
-& $helm upgrade --install store $chart --kubeconfig $kubeconfig -n urumi -f $values --wait --timeout 8m
+& $helm upgrade --install store $chart --kubeconfig $kubeconfig -n team-mcp -f $values --wait --timeout 8m
 if ($LASTEXITCODE -ne 0) { throw 'Store rollout failed. Inspect pods and events; do not delete the PVCs.' }
-& kubectl --kubeconfig $kubeconfig -n urumi get deployments,pvc,services,ingress
+& kubectl --kubeconfig $kubeconfig -n team-mcp get deployments,pvc,services,ingress
 if ($LASTEXITCODE -ne 0) { throw 'Could not inspect the store resources.' }
 Write-Host 'Open http://store.localhost:8080. The setup Job installed WooCommerce; an existing store keeps its content.'

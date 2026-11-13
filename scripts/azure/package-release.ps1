@@ -17,7 +17,7 @@ try {
     }
     $names = @()
     foreach ($image in $images.Keys) {
-        $name = "urumi/${image}:$Tag"
+        $name = "team-mcp/${image}:$Tag"
         & docker build --platform linux/amd64 -t $name $images[$image]
         if ($LASTEXITCODE -ne 0) { throw "Image build failed: $image" }
         $names += $name

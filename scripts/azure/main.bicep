@@ -4,8 +4,8 @@ param location string = resourceGroup().location
 @description('Select an available x64 VM size after checking subscription restrictions and price.')
 param vmSize string
 
-param namePrefix string = 'urumi-demo'
-param adminUsername string = 'urumiadmin'
+param namePrefix string = 'team-demo'
+param adminUsername string = 'azureadmin'
 
 @description('Public SSH key only. Never supply the private key here.')
 param sshPublicKey string
@@ -16,7 +16,7 @@ param adminSourceCidr string
 param diskSizeGB int = 64
 
 var tags = {
-  project: 'urumi-mcp-gateway'
+  project: 'team-mcp-gateway'
   purpose: 'student-demo'
 }
 

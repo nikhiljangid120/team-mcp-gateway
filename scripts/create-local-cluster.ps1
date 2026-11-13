@@ -12,16 +12,16 @@ if ($LASTEXITCODE -ne 0) { throw 'Docker Linux engine must be running first.' }
 
 $clusterJson = & $k3d cluster list -o json
 if ($LASTEXITCODE -ne 0) { throw 'Could not inspect existing k3d clusters.' }
-$existing = Find-K3dCluster -Json ($clusterJson -join "`n") -Name 'urumi'
+$existing = Find-K3dCluster -Json ($clusterJson -join "`n") -Name 'team-mcp'
 if ($existing) {
-    Write-Host 'The urumi cluster already exists; preserving it and its data.'
-    & $k3d cluster start urumi --wait --timeout 120s
+    Write-Host 'The team-mcp cluster already exists; preserving it and its data.'
+    & $k3d cluster start team-mcp --wait --timeout 120s
     if ($LASTEXITCODE -ne 0) { throw 'Existing cluster could not start.' }
 } else {
-    $existingNodes = & docker ps -a --filter 'label=k3d.cluster=urumi' --format '{{.Names}}'
+    $existingNodes = & docker ps -a --filter 'label=k3d.cluster=team-mcp' --format '{{.Names}}'
     if ($LASTEXITCODE -ne 0) { throw 'Could not inspect existing cluster containers.' }
     if ($existingNodes) {
-        throw 'Existing urumi containers were found but cluster discovery failed. Refusing to create a replacement cluster. Inspect k3d cluster list and Docker context.'
+        throw 'Existing team-mcp containers were found but cluster discovery failed. Refusing to create a replacement cluster. Inspect k3d cluster list and Docker context.'
     }
     foreach ($port in @(6550, 8080, 8443)) {
         if (Get-NetTCPConnection -LocalPort $port -State Listen -ErrorAction SilentlyContinue) {
@@ -36,7 +36,7 @@ if ($existing) {
     }
     # One node keeps the local learning environment small. This is not HA.
     # Only loopback ports are published; the LAN cannot connect to these ports.
-    & $k3d cluster create urumi @extraArgs `
+    & $k3d cluster create team-mcp @extraArgs `
         --image rancher/k3s:v1.35.5-k3s1 `
         --servers 1 --agents 0 `
         --api-port '127.0.0.1:6550' `
@@ -50,7 +50,7 @@ if ($existing) {
 
 # Keep cluster-admin credentials in the ignored project directory, never in Git.
 # Explicit --kubeconfig commands avoid changing the user's global context.
-$configText = & $k3d kubeconfig get urumi
+$configText = & $k3d kubeconfig get team-mcp
 if ($LASTEXITCODE -ne 0) { throw 'Could not read the cluster kubeconfig.' }
 [System.IO.File]::WriteAllText($kubeconfig, ($configText -join "`n") + "`n", [System.Text.UTF8Encoding]::new($false))
 & kubectl --kubeconfig $kubeconfig wait --for=condition=Ready nodes --all --timeout=120s

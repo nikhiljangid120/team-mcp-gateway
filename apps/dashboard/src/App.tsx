@@ -56,7 +56,7 @@ export function App() {
           <svg className="brand-symbol" aria-hidden="true" width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" strokeWidth="1.7">
             <rect x="2" y="8" width="9" height="15" rx="4.5" /><rect x="15" y="3" width="9" height="15" rx="4.5" /><path d="m8 16 10-6" />
           </svg>
-          <span className="masthead-logo">urumi<span className="masthead-tagline"> / gateway</span></span>
+          <span className="masthead-logo">team-mcp<span className="masthead-tagline"> / gateway</span></span>
         </div>
         <nav aria-label="Main navigation">
           {visible.map(page => (

@@ -23,28 +23,28 @@ $images = [ordered]@{
 }
 $names = @()
 foreach ($image in $images.Keys) {
-    $name = "urumi/${image}:$tag"
+    $name = "team-mcp/${image}:$tag"
     & docker build -q -t $name (Join-Path $projectRoot $images[$image])
     if ($LASTEXITCODE -ne 0) { throw "Building $image failed." }
     $names += $name
 }
-& $k3d image import -c urumi @names
+& $k3d image import -c team-mcp @names
 if ($LASTEXITCODE -ne 0) { throw 'Importing images into the cluster failed.' }
 
 $overrides = @(
-    '--set', "gateway.image=urumi/gateway:$tag",
-    '--set', "dashboard.image=urumi/dashboard:$tag",
-    '--set', "upstreams.woo.image=urumi/woo-mcp:$tag",
-    '--set', "upstreams.utils.image=urumi/utils-mcp:$tag",
-    '--set', "upstreams.everything.image=urumi/everything-mcp:$tag"
+    '--set', "gateway.image=team-mcp/gateway:$tag",
+    '--set', "dashboard.image=team-mcp/dashboard:$tag",
+    '--set', "upstreams.woo.image=team-mcp/woo-mcp:$tag",
+    '--set', "upstreams.utils.image=team-mcp/utils-mcp:$tag",
+    '--set', "upstreams.everything.image=team-mcp/everything-mcp:$tag"
 )
 
 & $helm lint $chart -f $values @overrides
 if ($LASTEXITCODE -ne 0) { throw 'Helm lint failed.' }
-& $helm upgrade --install platform $chart --kubeconfig $kubeconfig -n urumi-platform -f $values @overrides --dry-run=server | Out-Null
+& $helm upgrade --install platform $chart --kubeconfig $kubeconfig -n mcp-platform -f $values @overrides --dry-run=server | Out-Null
 if ($LASTEXITCODE -ne 0) { throw 'Kubernetes rejected the rendered chart.' }
 
-& $helm upgrade --install platform $chart --kubeconfig $kubeconfig -n urumi-platform -f $values @overrides --wait --timeout 6m
+& $helm upgrade --install platform $chart --kubeconfig $kubeconfig -n mcp-platform -f $values @overrides --wait --timeout 6m
 if ($LASTEXITCODE -ne 0) { throw 'Platform rollout failed. Check pods and events, or roll back with helm rollback platform.' }
-& kubectl --kubeconfig $kubeconfig -n urumi-platform get pods,services,ingress
-Write-Host 'Open http://gateway.localhost:8080 and sign in as admin@urumi.local (password: ADMIN_PASSWORD in .local/platform-secrets.env).'
+& kubectl --kubeconfig $kubeconfig -n mcp-platform get pods,services,ingress
+Write-Host 'Open http://gateway.localhost:8080 and sign in as admin@gateway.local (password: ADMIN_PASSWORD in .local/platform-secrets.env).'

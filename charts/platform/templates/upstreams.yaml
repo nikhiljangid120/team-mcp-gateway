@@ -31,7 +31,7 @@ spec:
         {{- include "platform.labels" $ | nindent 8 }}
         app.kubernetes.io/component: {{ $component }}
         # The network policy only lets the gateway reach pods with this label.
-        urumi.dev/role: mcp-upstream
+        team-mcp.dev/role: mcp-upstream
     spec:
       {{- include "platform.podSecurity" $ | nindent 6 }}
       containers:

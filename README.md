@@ -7,8 +7,8 @@ use their tools through one gateway endpoint with their own identity.
 ## Public live demo
 
 - Gateway: <https://gateway.20.194.4.132.sslip.io>
-- Email: `demo@urumi.example`
-- Password: `Urumi-Demo-ad2e5b4c593dbc92`
+- Email: `demo@gateway.example`
+- Password: `Team-Demo-ad2e5b4c593dbc92`
 - Storefront: <https://store.20.194.4.132.sslip.io/shop/>
 
 This intentionally public account has the **member** role. Use it to try Chat,
@@ -94,8 +94,8 @@ implementation does not guarantee durable audit capture during database failure.
 | Namespace | Workloads |
 | --- | --- |
 | `kube-system` | Traefik and Kubernetes supporting services |
-| `urumi-platform` | Dashboard, gateway, PostgreSQL and three MCP servers |
-| `urumi` | WordPress/WooCommerce, MySQL and the store setup Job |
+| `mcp-platform` | Dashboard, gateway, PostgreSQL and three MCP servers |
+| `team-mcp` | WordPress/WooCommerce, MySQL and the store setup Job |
 
 All application workloads run in the cluster. Local k3d hosts K3s inside Docker;
 Azure runs K3s directly on an Ubuntu VM using containerd. The cloud demo uses one
@@ -130,14 +130,14 @@ checksum-verified k3d and Helm into ignored `.local/`.
 .\scripts\deploy-platform.ps1
 ```
 
-The cluster script starts the existing `urumi` cluster instead of replacing it.
+The cluster script starts the existing `team-mcp` cluster instead of replacing it.
 The store setup Job configures WordPress/WooCommerce and cash on delivery. The
 platform script builds five images, imports them and installs a Helm release.
 
 The domain approach is `*.localhost` with loopback host ports 8080 (HTTP), 8443
 (HTTPS when configured) and 6550 (Kubernetes API):
 
-- Dashboard: <http://gateway.localhost:8080>, email `admin@urumi.local` and
+- Dashboard: <http://gateway.localhost:8080>, email `admin@gateway.local` and
   `ADMIN_PASSWORD` from ignored `.local/platform-secrets.env`.
 - Shop: <http://store.localhost:8080/shop/>.
 - Store admin: <http://store.localhost:8080/wp-admin/>, with `STORE_ADMIN_USER`
@@ -156,7 +156,7 @@ Supply your provider key privately and restart the gateway:
 
 ```powershell
 .\scripts\create-local-secrets.ps1 -LlmApiKey '<your API key>'
-kubectl --kubeconfig .local\kubeconfig -n urumi-platform rollout restart deployment gateway
+kubectl --kubeconfig .local\kubeconfig -n mcp-platform rollout restart deployment gateway
 ```
 
 1. Prepare a labelled demo product through WordPress or chat. Do not assume an
@@ -183,7 +183,7 @@ gateway URL and B's key; adapt this example to the client's supported format:
 ```json
 {
   "mcpServers": {
-    "urumi": {
+    "team-mcp": {
       "type": "http",
       "url": "http://127.0.0.1:8080/mcp",
       "headers": { "Authorization": "Bearer <USER_B_GATEWAY_KEY>" }
@@ -211,12 +211,12 @@ installs K3s and Helm during first boot:
    administrator; expose HTTP/HTTPS, not database or upstream ports.
 2. Wait for cloud-init/K3s readiness and verify the SSH host key through the provider.
 3. Run `scripts/azure/package-release.ps1` to build/export images and charts.
-   Transfer archives over SSH, extract the release to `/opt/urumi/release`, then
+   Transfer archives over SSH, extract the release to `/opt/team-mcp/release`, then
    import images with `sudo k3s ctr images import /path/to/images.tar`.
 4. Run the server script with the image tag, resolving hostnames and admin email:
 
 ```bash
-sudo bash /opt/urumi/release/scripts/azure/deploy-on-vm.sh \
+sudo bash /opt/team-mcp/release/scripts/azure/deploy-on-vm.sh \
   IMAGE_TAG gateway.example.com store.example.com admin@example.com
 ```
 
@@ -229,9 +229,9 @@ For another host/registry, adapt the examples in each chart's `values-prod.yaml`
 create the namespaces/Secrets and TLS configuration, then deploy:
 
 ```bash
-helm upgrade --install store charts/store -n urumi \
+helm upgrade --install store charts/store -n team-mcp \
   -f charts/store/values-prod.yaml --wait
-helm upgrade --install platform charts/platform -n urumi-platform \
+helm upgrade --install platform charts/platform -n mcp-platform \
   -f charts/platform/values-prod.yaml --wait
 ```
 
@@ -276,8 +276,8 @@ files have PVCs. Preserve the encryption key and secret configuration. Helm depl
 versioned images; probes and resource requests/limits are declared in the charts.
 
 ```powershell
-.local\tools\helm.exe --kubeconfig .local\kubeconfig -n urumi-platform history platform
-.local\tools\helm.exe --kubeconfig .local\kubeconfig -n urumi-platform rollback platform <revision>
+.local\tools\helm.exe --kubeconfig .local\kubeconfig -n mcp-platform history platform
+.local\tools\helm.exe --kubeconfig .local\kubeconfig -n mcp-platform rollback platform <revision>
 ```
 
 On the VM use Helm with `/etc/rancher/k3s/k3s.yaml`. Rollback changes manifests/images,

@@ -8,25 +8,25 @@ packages:
   - openssl
   - tar
 write_files:
-  - path: /opt/urumi/bootstrap.sh
+  - path: /opt/team-mcp/bootstrap.sh
     permissions: '0700'
     owner: root:root
     content: |
       #!/usr/bin/env bash
       set -euo pipefail
-      install -d -m 0700 /opt/urumi/private
-      curl --fail --silent --show-error --location https://get.k3s.io -o /opt/urumi/install-k3s.sh
-      INSTALL_K3S_VERSION='v1.35.5+k3s1' K3S_KUBECONFIG_MODE='600' sh /opt/urumi/install-k3s.sh
+      install -d -m 0700 /opt/team-mcp/private
+      curl --fail --silent --show-error --location https://get.k3s.io -o /opt/team-mcp/install-k3s.sh
+      INSTALL_K3S_VERSION='v1.35.5+k3s1' K3S_KUBECONFIG_MODE='600' sh /opt/team-mcp/install-k3s.sh
       # Use the same pinned Helm release as the local project tooling.
       version=v4.3.1
       archive="helm-${version}-linux-amd64.tar.gz"
-      curl --fail --silent --show-error --location "https://get.helm.sh/${archive}" -o "/opt/urumi/${archive}"
-      curl --fail --silent --show-error --location "https://get.helm.sh/${archive}.sha256sum" -o "/opt/urumi/${archive}.sha256sum"
-      cd /opt/urumi
+      curl --fail --silent --show-error --location "https://get.helm.sh/${archive}" -o "/opt/team-mcp/${archive}"
+      curl --fail --silent --show-error --location "https://get.helm.sh/${archive}.sha256sum" -o "/opt/team-mcp/${archive}.sha256sum"
+      cd /opt/team-mcp
       sha256sum --check "${archive}.sha256sum"
       tar -xzf "${archive}"
       install -m 0755 linux-amd64/helm /usr/local/bin/helm
       /usr/local/bin/k3s kubectl wait --for=condition=Ready nodes --all --timeout=180s
-      touch /opt/urumi/bootstrap-ready
+      touch /opt/team-mcp/bootstrap-ready
 runcmd:
-  - [bash, /opt/urumi/bootstrap.sh]
+  - [bash, /opt/team-mcp/bootstrap.sh]

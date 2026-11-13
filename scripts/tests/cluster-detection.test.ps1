@@ -3,16 +3,16 @@ $ErrorActionPreference = 'Stop'
 
 $cases = @(
     @{ Json = '[]'; Expected = $null },
-    @{ Json = '[{"name":"urumi","serversCount":1}]'; Expected = 'urumi' },
-    @{ Json = '[{"name":"other"},{"name":"urumi"},{"name":"third"}]'; Expected = 'urumi' },
+    @{ Json = '[{"name":"team-mcp","serversCount":1}]'; Expected = 'team-mcp' },
+    @{ Json = '[{"name":"other"},{"name":"team-mcp"},{"name":"third"}]'; Expected = 'team-mcp' },
     @{ Json = '[{"name":"other"}]'; Expected = $null }
 )
 foreach ($case in $cases) {
-    $found = Find-K3dCluster -Json $case.Json -Name 'urumi'
+    $found = Find-K3dCluster -Json $case.Json -Name 'team-mcp'
     if ($case.Expected -eq $null) {
-        if ($null -ne $found) { throw 'Incorrectly detected a nonexistent urumi cluster.' }
+        if ($null -ne $found) { throw 'Incorrectly detected a nonexistent team-mcp cluster.' }
     } elseif ($null -eq $found -or $found.name -ne $case.Expected) {
-        throw 'Failed to detect the existing urumi cluster.'
+        throw 'Failed to detect the existing team-mcp cluster.'
     }
 }
 Write-Host "PASS: 4 cluster detection cases in PowerShell $($PSVersionTable.PSVersion)"

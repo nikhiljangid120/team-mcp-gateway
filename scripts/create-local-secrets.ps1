@@ -41,7 +41,7 @@ $defaults = [ordered]@{
     WOOCOMMERCE_CONSUMER_SECRET = { 'cs_' + (New-RandomHex 20) }
     STORE_ADMIN_USER = { 'admin' }
     STORE_ADMIN_PASSWORD = { New-RandomHex 12 }
-    STORE_ADMIN_EMAIL = { 'admin@urumi.local' }
+    STORE_ADMIN_EMAIL = { 'admin@gateway.local' }
 }
 foreach ($name in $defaults.Keys) {
     if (-not $values.Contains($name)) { $values[$name] = & $defaults[$name] }
@@ -71,8 +71,8 @@ function Set-Secret([string]$Namespace, [string]$Name, [System.Collections.IDict
     Write-Host "Secret $Namespace/$Name is up to date."
 }
 
-Set-Namespace 'urumi'
-Set-Namespace 'urumi-platform'
+Set-Namespace 'team-mcp'
+Set-Namespace 'mcp-platform'
 
 $gateway = [ordered]@{
     POSTGRES_PASSWORD = $values['POSTGRES_PASSWORD']
@@ -80,14 +80,14 @@ $gateway = [ordered]@{
     ADMIN_PASSWORD = $values['ADMIN_PASSWORD']
 }
 if ($values.Contains('LLM_API_KEY')) { $gateway['LLM_API_KEY'] = $values['LLM_API_KEY'] }
-Set-Secret 'urumi-platform' 'gateway' $gateway
-Set-Secret 'urumi-platform' 'woo-mcp' ([ordered]@{
+Set-Secret 'mcp-platform' 'gateway' $gateway
+Set-Secret 'mcp-platform' 'woo-mcp' ([ordered]@{
     WOOCOMMERCE_CONSUMER_KEY = $values['WOOCOMMERCE_CONSUMER_KEY']
     WOOCOMMERCE_CONSUMER_SECRET = $values['WOOCOMMERCE_CONSUMER_SECRET']
     MCP_UPSTREAM_TOKEN = $values['MCP_UPSTREAM_TOKEN']
 })
-Set-Secret 'urumi-platform' 'utils-mcp' ([ordered]@{ UTILS_MCP_API_KEY = $values['UTILS_MCP_API_KEY'] })
-Set-Secret 'urumi' 'store-setup' ([ordered]@{
+Set-Secret 'mcp-platform' 'utils-mcp' ([ordered]@{ UTILS_MCP_API_KEY = $values['UTILS_MCP_API_KEY'] })
+Set-Secret 'team-mcp' 'store-setup' ([ordered]@{
     'admin-user' = $values['STORE_ADMIN_USER']
     'admin-password' = $values['STORE_ADMIN_PASSWORD']
     'admin-email' = $values['STORE_ADMIN_EMAIL']

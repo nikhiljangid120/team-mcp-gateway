@@ -15,20 +15,20 @@ This deploys the dashboard, gateway, three MCP servers, PostgreSQL, WordPress/Wo
 Use Azure CLI with the intended student subscription selected. Check allowed deployment regions, VM quota, availability and current pricing first. Keep the subscription spending limit enabled. The template accepts `vmSize`, `sshPublicKey`, `adminSourceCidr` (your IPv4 followed by `/32`), and optional `location` parameters.
 
 ```powershell
-az deployment group validate -g urumi-demo-rg --template-file scripts/azure/main.bicep --parameters '@.local/azure/parameters.json'
-az deployment group create -g urumi-demo-rg --name urumi-initial --template-file scripts/azure/main.bicep --parameters '@.local/azure/parameters.json'
+az deployment group validate -g Team-Demo-rg --template-file scripts/azure/main.bicep --parameters '@.local/azure/parameters.json'
+az deployment group create -g Team-Demo-rg --name team-mcp-initial --template-file scripts/azure/main.bicep --parameters '@.local/azure/parameters.json'
 ./scripts/azure/package-release.ps1 -Tag azure-YOUR_VERSION
 ```
 
-Wait for `sudo cloud-init status --wait` on the VM. Verify its SSH host key through Azure Run Command before accepting it. Transfer `images.tar` and `release.tar.gz` over SSH, extract the release to `/opt/urumi/release`, then import images with `sudo k3s ctr images import /path/to/images.tar`.
+Wait for `sudo cloud-init status --wait` on the VM. Verify its SSH host key through Azure Run Command before accepting it. Transfer `images.tar` and `release.tar.gz` over SSH, extract the release to `/opt/team-mcp/release`, then import images with `sudo k3s ctr images import /path/to/images.tar`.
 
 Run as root:
 
 ```bash
-bash /opt/urumi/release/scripts/azure/deploy-on-vm.sh IMAGE_TAG gateway.PUBLIC_IP.sslip.io store.PUBLIC_IP.sslip.io ADMIN_EMAIL
+bash /opt/team-mcp/release/scripts/azure/deploy-on-vm.sh IMAGE_TAG gateway.PUBLIC_IP.sslip.io store.PUBLIC_IP.sslip.io ADMIN_EMAIL
 ```
 
-An optional root-readable `/opt/urumi/private/llm.env` containing only `LLM_API_KEY=...` enables chat with the configured model provider. Other credentials are generated fresh in `/opt/urumi/private/platform-secrets.env`. Read passwords privately over SSH; do not paste them into documentation or source control.
+An optional root-readable `/opt/team-mcp/private/llm.env` containing only `LLM_API_KEY=...` enables chat with the configured model provider. Other credentials are generated fresh in `/opt/team-mcp/private/platform-secrets.env`. Read passwords privately over SSH; do not paste them into documentation or source control.
 
 ## Verify
 
@@ -39,8 +39,8 @@ Temporary sslip.io hostnames depend on a third-party DNS service and certificate
 ## Stop and resume costs
 
 ```powershell
-az vm deallocate -g urumi-demo-rg -n urumi-demo-vm
-az vm start -g urumi-demo-rg -n urumi-demo-vm
+az vm deallocate -g Team-Demo-rg -n Team-Demo-vm
+az vm start -g Team-Demo-rg -n Team-Demo-vm
 ```
 
 Deallocation stops compute billing but retained disks and public IPv4 still incur charges. Guest shutdown alone is insufficient. The VM size validated on 2026-10-25 was `Standard_B2s_v2` in Korea Central, retail Linux compute US$0.10/hour (US$73 per 730 hours), excluding disk, public IP, tax and other usage. Student credits are finite; this is not a permanently free deployment. Verify current charges in Azure Cost Management.

@@ -10,7 +10,7 @@ persistence:
   storageClass: ""
 
 gateway:
-  image: urumi/gateway:dev
+  image: team-mcp/gateway:dev
   # Keys: POSTGRES_PASSWORD, GATEWAY_ENCRYPTION_KEY, ADMIN_PASSWORD and optionally LLM_API_KEY.
   existingSecret: gateway
   adminEmail: ""
@@ -30,7 +30,7 @@ postgres:
     limits: { cpu: "1", memory: 512Mi }
 
 dashboard:
-  image: urumi/dashboard:dev
+  image: team-mcp/dashboard:dev
   resources:
     requests: { cpu: 10m, memory: 16Mi }
     limits: { cpu: 200m, memory: 64Mi }
@@ -40,23 +40,23 @@ dashboard:
 upstreams:
   woo:
     name: WooCommerce
-    image: urumi/woo-mcp:dev
+    image: team-mcp/woo-mcp:dev
     port: 3001
     existingSecret: woo-mcp
     auth: { type: bearer, secretKey: MCP_UPSTREAM_TOKEN }
     env:
-      WOOCOMMERCE_URL: http://store-wordpress.urumi.svc.cluster.local
+      WOOCOMMERCE_URL: http://store-wordpress.team-mcp.svc.cluster.local
       WOOCOMMERCE_ALLOW_HTTP: "true"
       WOOCOMMERCE_FORWARDED_PROTO: https
   utils:
     name: Utilities
-    image: urumi/utils-mcp:dev
+    image: team-mcp/utils-mcp:dev
     port: 3002
     existingSecret: utils-mcp
     auth: { type: header, headerName: X-Api-Key, secretKey: UTILS_MCP_API_KEY }
   everything:
     name: Reference server
-    image: urumi/everything-mcp:dev
+    image: team-mcp/everything-mcp:dev
     port: 3001
     auth: { type: none }
 

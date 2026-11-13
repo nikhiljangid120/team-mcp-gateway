@@ -4,14 +4,14 @@ timezone: Asia/Kolkata
 persistence:
   storageClass: local-path
 gateway:
-  image: registry.example.com/urumi/gateway:0.1.0
+  image: registry.example.com/team-mcp/gateway:0.1.0
   adminEmail: admin@example.com
 dashboard:
-  image: registry.example.com/urumi/dashboard:0.1.0
+  image: registry.example.com/team-mcp/dashboard:0.1.0
 upstreams:
-  woo: { image: registry.example.com/urumi/woo-mcp:0.1.0 }
-  utils: { image: registry.example.com/urumi/utils-mcp:0.1.0 }
-  everything: { image: registry.example.com/urumi/everything-mcp:0.1.0 }
+  woo: { image: registry.example.com/team-mcp/woo-mcp:0.1.0 }
+  utils: { image: registry.example.com/team-mcp/utils-mcp:0.1.0 }
+  everything: { image: registry.example.com/team-mcp/everything-mcp:0.1.0 }
 ingress:
   host: gateway.example.com
   tls:

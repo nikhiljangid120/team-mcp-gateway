@@ -51,12 +51,12 @@ test('private, loopback and metadata addresses are blocked', () => {
 });
 
 test('upstream URLs must be public unless the host is allowlisted', async () => {
-  const policy = { allowPrivateUpstreams: false, upstreamAllowHosts: ['utils-mcp.urumi-platform.svc.cluster.local'] };
+  const policy = { allowPrivateUpstreams: false, upstreamAllowHosts: ['utils-mcp.mcp-platform.svc.cluster.local'] };
   for (const url of [
     'http://169.254.169.254/latest/meta-data', 'http://localhost:3000/mcp', 'http://gateway-postgres:5432',
-    'http://gateway-postgres.urumi-platform.svc.cluster.local:5432', 'ftp://example.com/mcp', 'http://user:pw@example.com/mcp',
+    'http://gateway-postgres.mcp-platform.svc.cluster.local:5432', 'ftp://example.com/mcp', 'http://user:pw@example.com/mcp',
   ]) await assert.rejects(assertSafeUpstreamUrl(url, policy), url);
-  assert.ok(await assertSafeUpstreamUrl('http://utils-mcp.urumi-platform.svc.cluster.local:3002/mcp', policy));
+  assert.ok(await assertSafeUpstreamUrl('http://utils-mcp.mcp-platform.svc.cluster.local:3002/mcp', policy));
   assert.ok(await assertSafeUpstreamUrl('http://127.0.0.1:3002/mcp', { ...policy, allowPrivateUpstreams: true }));
 });
 

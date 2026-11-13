@@ -16,12 +16,12 @@ for host in "$gateway_host" "$store_host"; do
 done
 [[ "$tag" =~ ^[a-zA-Z0-9._-]+$ ]] || { echo 'Invalid image tag.' >&2; exit 2; }
 [[ "$admin_email" =~ ^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+$ ]] || { echo 'Invalid admin email.' >&2; exit 2; }
-[[ -f /opt/urumi/bootstrap-ready ]] || { echo 'Wait for cloud-init bootstrap first.' >&2; exit 1; }
+[[ -f /opt/team-mcp/bootstrap-ready ]] || { echo 'Wait for cloud-init bootstrap first.' >&2; exit 1; }
 export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-cd /opt/urumi/release
-install -d -m 0700 /opt/urumi/private
+cd /opt/team-mcp/release
+install -d -m 0700 /opt/team-mcp/private
 
-secrets=/opt/urumi/private/platform-secrets.env
+secrets=/opt/team-mcp/private/platform-secrets.env
 if [[ ! -e "$secrets" ]]; then
   {
     printf 'POSTGRES_PASSWORD=%s\n' "$(openssl rand -hex 24)"
@@ -39,7 +39,7 @@ if [[ ! -e "$secrets" ]]; then
 fi
 # File is generated locally by this script; values are shell-safe random strings.
 source "$secrets"
-for ns in urumi urumi-platform; do
+for ns in team-mcp mcp-platform; do
   kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f -
 done
 
@@ -48,23 +48,23 @@ apply_secret() {
   shift 2
   kubectl -n "$ns" create secret generic "$name" "$@" --dry-run=client -o yaml | kubectl apply -f -
 }
-apply_secret urumi store-database --from-literal="mysql-password=$MYSQL_PASSWORD" --from-literal="mysql-root-password=$MYSQL_ROOT_PASSWORD"
-apply_secret urumi store-setup --from-literal="admin-user=$STORE_ADMIN_USER" \
+apply_secret team-mcp store-database --from-literal="mysql-password=$MYSQL_PASSWORD" --from-literal="mysql-root-password=$MYSQL_ROOT_PASSWORD"
+apply_secret team-mcp store-setup --from-literal="admin-user=$STORE_ADMIN_USER" \
   --from-literal="admin-password=$STORE_ADMIN_PASSWORD" --from-literal="admin-email=$STORE_ADMIN_EMAIL" \
   --from-literal="consumer-key=$WOOCOMMERCE_CONSUMER_KEY" --from-literal="consumer-secret=$WOOCOMMERCE_CONSUMER_SECRET"
 gateway_args=(--from-literal="POSTGRES_PASSWORD=$POSTGRES_PASSWORD" --from-literal="GATEWAY_ENCRYPTION_KEY=$GATEWAY_ENCRYPTION_KEY" --from-literal="ADMIN_PASSWORD=$ADMIN_PASSWORD")
 # An optional file contains only LLM_API_KEY, not any local database or account credentials.
-if [[ -s /opt/urumi/private/llm.env ]]; then
+if [[ -s /opt/team-mcp/private/llm.env ]]; then
   while IFS='=' read -r key value; do
     if [[ "$key" == LLM_API_KEY && -n "$value" ]]; then
       gateway_args+=(--from-literal="LLM_API_KEY=$value")
     fi
-  done < /opt/urumi/private/llm.env
+  done < /opt/team-mcp/private/llm.env
 fi
-apply_secret urumi-platform gateway "${gateway_args[@]}"
-apply_secret urumi-platform woo-mcp --from-literal="WOOCOMMERCE_CONSUMER_KEY=$WOOCOMMERCE_CONSUMER_KEY" \
+apply_secret mcp-platform gateway "${gateway_args[@]}"
+apply_secret mcp-platform woo-mcp --from-literal="WOOCOMMERCE_CONSUMER_KEY=$WOOCOMMERCE_CONSUMER_KEY" \
   --from-literal="WOOCOMMERCE_CONSUMER_SECRET=$WOOCOMMERCE_CONSUMER_SECRET" --from-literal="MCP_UPSTREAM_TOKEN=$MCP_UPSTREAM_TOKEN"
-apply_secret urumi-platform utils-mcp --from-literal="UTILS_MCP_API_KEY=$UTILS_MCP_API_KEY"
+apply_secret mcp-platform utils-mcp --from-literal="UTILS_MCP_API_KEY=$UTILS_MCP_API_KEY"
 
 # K3s' packaged Traefik owns ports 80/443. ACME state survives Traefik Pod replacement.
 cat > /var/lib/rancher/k3s/server/manifests/traefik-acme.yaml <<'YAML'
@@ -104,7 +104,7 @@ done
 kubectl -n kube-system get deployment traefik -o jsonpath='{.spec.template.spec.containers[0].args}' | grep -q 'acme.storage=/data/acme.json'
 kubectl -n kube-system rollout status deployment/traefik --timeout=180s
 
-cat > /opt/urumi/private/store-values.yaml <<YAML
+cat > /opt/team-mcp/private/store-values.yaml <<YAML
 existingSecret: store-database
 persistence:
   storageClass: local-path
@@ -121,23 +121,23 @@ setup:
   url: https://${store_host}
 YAML
 
-cat > /opt/urumi/private/platform-values.yaml <<YAML
+cat > /opt/team-mcp/private/platform-values.yaml <<YAML
 publicUrl: https://${gateway_host}
 timezone: Asia/Kolkata
 persistence:
   storageClass: local-path
 gateway:
-  image: urumi/gateway:${tag}
+  image: team-mcp/gateway:${tag}
   adminEmail: ${admin_email}
 dashboard:
-  image: urumi/dashboard:${tag}
+  image: team-mcp/dashboard:${tag}
 upstreams:
   woo:
-    image: urumi/woo-mcp:${tag}
+    image: team-mcp/woo-mcp:${tag}
   utils:
-    image: urumi/utils-mcp:${tag}
+    image: team-mcp/utils-mcp:${tag}
   everything:
-    image: urumi/everything-mcp:${tag}
+    image: team-mcp/everything-mcp:${tag}
 ingress:
   host: ${gateway_host}
   annotations:
@@ -146,11 +146,11 @@ ingress:
     traefik.ingress.kubernetes.io/router.tls.certresolver: letsencrypt
 YAML
 
-helm lint charts/store -f /opt/urumi/private/store-values.yaml
-helm lint charts/platform -f /opt/urumi/private/platform-values.yaml
-helm upgrade --install store charts/store -n urumi -f /opt/urumi/private/store-values.yaml --wait --timeout 12m
-helm upgrade --install platform charts/platform -n urumi-platform -f /opt/urumi/private/platform-values.yaml --wait --timeout 8m
-kubectl -n urumi get pods,jobs,pvc
-kubectl -n urumi-platform get pods,ingress,pvc
+helm lint charts/store -f /opt/team-mcp/private/store-values.yaml
+helm lint charts/platform -f /opt/team-mcp/private/platform-values.yaml
+helm upgrade --install store charts/store -n team-mcp -f /opt/team-mcp/private/store-values.yaml --wait --timeout 12m
+helm upgrade --install platform charts/platform -n mcp-platform -f /opt/team-mcp/private/platform-values.yaml --wait --timeout 8m
+kubectl -n team-mcp get pods,jobs,pvc
+kubectl -n mcp-platform get pods,ingress,pvc
 printf 'Gateway: https://%s\nStore: https://%s\n' "$gateway_host" "$store_host"
-echo 'Passwords were saved privately in /opt/urumi/private/platform-secrets.env; not printed.'
+echo 'Passwords were saved privately in /opt/team-mcp/private/platform-secrets.env; not printed.'

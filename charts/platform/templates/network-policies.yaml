@@ -37,7 +37,7 @@ metadata:
     {{- include "platform.labels" . | nindent 4 }}
 spec:
   podSelector:
-    matchLabels: { urumi.dev/role: mcp-upstream }
+    matchLabels: { team-mcp.dev/role: mcp-upstream }
   policyTypes: [Ingress]
   ingress:
     - from:

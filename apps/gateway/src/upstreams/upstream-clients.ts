@@ -78,7 +78,7 @@ export class UpstreamClients implements OnModuleDestroy {
     const transport = new StreamableHTTPClientTransport(new URL(upstream.url), {
       requestInit: { headers: this.upstreams.authHeaders(upstream), redirect: 'error' },
     });
-    const client = new Client({ name: 'urumi-gateway', version: '0.1.0' }, { versionNegotiation: { mode: 'auto' } });
+    const client = new Client({ name: 'team-gateway', version: '0.1.0' }, { versionNegotiation: { mode: 'auto' } });
     await client.connect(transport, { timeout: this.config.listTimeoutMs });
     return client;
   }

@@ -30,7 +30,7 @@ if any(path.exists() for path in paths):
     print('Reusing valid local TLS certificates.')
 else:
     ca_key = rsa.generate_private_key(public_exponent=65537, key_size=3072)
-    ca_name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Urumi local development CA')])
+    ca_name = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, 'Team local development CA')])
     ca = (x509.CertificateBuilder().subject_name(ca_name).issuer_name(ca_name)
           .public_key(ca_key.public_key()).serial_number(x509.random_serial_number())
           .not_valid_before(now - timedelta(minutes=5)).not_valid_after(now + timedelta(days=365))
